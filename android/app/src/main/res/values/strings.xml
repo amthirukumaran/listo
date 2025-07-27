@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Listo</string>
+    <string name="StallionProjectId">6884ae9cc457eaa28e0121eb</string>
+    <string name="StallionAppToken">spb_IICGkkVoSzL9dGluxFH0im0m7dBMVBZLcHV5gjAXCD</string>
+    <!-- <string name="appCenterCrashes_whenToSendCrashes" moduleConfig="true" translatable="false">DO_NOT_ASK_JAVASCRIPT</string>
+    <string name="appCenterAnalytics_whenToEnableAnalytics" moduleConfig="true" translatable="false">ALWAYS_SEND</string> -->
 </resources>

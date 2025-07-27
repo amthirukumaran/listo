@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "950613133564",
+    "firebase_url": "https://listo-b5b2d-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "listo-b5b2d",
+    "storage_bucket": "listo-b5b2d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:950613133564:android:0cffbea08a1ef3ec2e6f79",
+        "android_client_info": {
+          "package_name": "com.listo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "950613133564-p786kuupie66664mgnv3cjh320le60va.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.listo",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "950613133564-dldmuu111qfaltvbc8pcj0oa1156ms9a.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDkQHWCSxblXLGp2PT58-IcncL9eLuZqh8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "950613133564-dldmuu111qfaltvbc8pcj0oa1156ms9a.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
