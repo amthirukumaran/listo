@@ -1,7 +1,7 @@
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useStallionUpdate, restart } from "react-native-stallion";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useContext, useLayoutEffect, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Keyboard, KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View, Modal, useWindowDimensions, ActivityIndicator } from "react-native";
 
@@ -42,10 +42,13 @@ export default function Dashboard() {
         getFoucs()
     }, [])
 
+    useEffect(() => {
+        checkForUpdates()
+    }, [isRestartRequired])
+
     const getFoucs = () => {
         setTimeout(() => {
             setIsLoad(false)
-            checkForUpdates()
         }, 1000);
     }
 
@@ -56,9 +59,6 @@ export default function Dashboard() {
             }, 400);
         }
     }
-
-
-    // console.log("isRestartRequires---", isRestartRequired)
 
     const handleClose = () => {
         refRBSheet?.current?.close();
