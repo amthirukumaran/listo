@@ -16,7 +16,7 @@ LogBox.ignoreLogs(["This method is deprecated (as well as all React Native Fireb
 
 function App() {
 
-  const [isLogin, setIsLogin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   const [userDetails, setUserDetails] = useState();
 
@@ -34,11 +34,20 @@ function App() {
       if (value === "false") {
         setShowGetStarted(false);
         setTimeout(async () => {
-          await AsyncStorage?.getItem("isLogin").then(value => {
+          await AsyncStorage?.getItem("isLogin").then(async (value) => {
             if (value === "true") {
-              setIsLogin(true)
+              setIsLoggedIn(true)
+              console.log("inside----")
+              await AsyncStorage.getItem("accountDetails").then(res => {
+                console.log("inside----", JSON.stringify(res, null, 4))
+                setAccountDetails(JSON.parse(res as string))
+              })
+              await AsyncStorage.getItem("userDetails").then(res => {
+                console.log("inside----", JSON.stringify(res, null, 4))
+                setUserDetails(JSON.parse(res as string))
+              })
             } else {
-              setIsLogin(false)
+              setIsLoggedIn(false)
             }
           })
           SplashScreen?.hide()
@@ -46,11 +55,20 @@ function App() {
       } else {
         setShowGetStarted(true);
         setTimeout(async () => {
-          await AsyncStorage?.getItem("isLogin").then(value => {
+          await AsyncStorage?.getItem("isLogin").then(async (value) => {
             if (value === "true") {
-              setIsLogin(true)
+              setIsLoggedIn(true)
+              console.log("inside----")
+              await AsyncStorage.getItem("accountDetails").then(res => {
+                console.log("inside----", JSON.stringify(res, null, 4))
+                setAccountDetails(JSON.parse(res as string))
+              })
+              await AsyncStorage.getItem("userDetails").then(res => {
+                console.log("inside----", JSON.stringify(res, null, 4))
+                setUserDetails(JSON.parse(res as string))
+              })
             } else {
-              setIsLogin(false)
+              setIsLoggedIn(false)
             }
           })
           SplashScreen?.hide()
@@ -61,9 +79,9 @@ function App() {
 
 
   return (
-    <ListoContext.Provider value={{ showGetStarted: showGetStarted, setShowGetStarted: setShowGetStarted, userDetails: userDetails, setUserDetails: setUserDetails, islogin: isLogin, setIsLogin: setIsLogin, accountDetails: accountDetails, setAccountDetails: setAccountDetails }}>
+    <ListoContext.Provider value={{ showGetStarted: showGetStarted, setShowGetStarted: setShowGetStarted, userDetails: userDetails, setUserDetails: setUserDetails, isLoggedIn: isLoggedIn, setIsLoggedIn: setIsLoggedIn, accountDetails: accountDetails, setAccountDetails: setAccountDetails }}>
       <NavigationContainer>
-        <SafeAreaProvider>
+        <SafeAreaProvider >
           <Rootstack />
         </SafeAreaProvider>
       </NavigationContainer>

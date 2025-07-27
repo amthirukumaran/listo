@@ -13,7 +13,7 @@ export default function Rootstack() {
 
     const RootStack = createStackNavigator();
 
-    const { showGetStarted, islogin } = useContext(ListoContext)
+    const { showGetStarted, isLoggedIn } = useContext(ListoContext)
 
 
     if (showGetStarted) {
@@ -24,7 +24,7 @@ export default function Rootstack() {
 
     return (
         <RootStack.Navigator screenOptions={{ headerShown: false }}>
-            {islogin ?
+            {isLoggedIn ?
                 <RootStack.Screen name="appStack" component={Appstack} />
                 :
                 <RootStack.Screen name="authStack" component={Authstack} />

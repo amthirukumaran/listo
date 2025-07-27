@@ -5,8 +5,8 @@ export interface listoContextType {
     setShowGetStarted: Dispatch<SetStateAction<boolean>>,
     setUserDetails: Dispatch<SetStateAction<any>>
     userDetails?: any,
-    islogin: boolean,
-    setIsLogin: Dispatch<SetStateAction<boolean>>,
+    isLoggedIn: boolean,
+    setIsLoggedIn: Dispatch<SetStateAction<boolean>>,
     accountDetails?: any
     setAccountDetails: Dispatch<SetStateAction<any>>
 }
@@ -15,8 +15,8 @@ const defaultValues: listoContextType = {
     showGetStarted: true,
     setShowGetStarted: () => { },
     setUserDetails: () => { },
-    islogin: false,
-    setIsLogin: () => { },
+    isLoggedIn: false,
+    setIsLoggedIn: () => { },
     accountDetails: [],
     setAccountDetails: () => { }
 }
