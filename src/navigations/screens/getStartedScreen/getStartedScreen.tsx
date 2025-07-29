@@ -1,8 +1,8 @@
 import { useContext, useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
 
 //Custom-Imports
+import { storage } from "../../../shared/config";
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import ListoContext from "../../../shared/listoContext";
@@ -53,7 +53,7 @@ export default function GetStartedScreen() {
     }
 
     const getStartedClose = async () => {
-        await AsyncStorage.setItem("showGetStarted", JSON?.stringify(false));
+        storage.set("showGetStarted", false)
         setShowGetStarted(false);
     }
 

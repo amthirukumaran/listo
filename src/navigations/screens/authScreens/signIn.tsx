@@ -3,9 +3,8 @@ import { useFormik } from "formik";
 import { Input } from '@rneui/base';
 import { useNavigation } from "@react-navigation/native";
 import { useContext, useLayoutEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import { GoogleAuthProvider, signInWithCredential, getAuth, signInWithEmailAndPassword, } from "@react-native-firebase/auth";
+import { GoogleAuthProvider, signInWithCredential, getAuth, signInWithEmailAndPassword } from "@react-native-firebase/auth";
 import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 //Custom-Imports
@@ -13,12 +12,13 @@ import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import ListoContext from '../../../shared/listoContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { encryptedStorage, storage } from '../../../shared/config';
 
 export default function SignIn() {
 
     const navigation: any = useNavigation();
 
-    const [isLoad, setIsLoad] = useState(true)
+    const [isLoad, setIsLoad] = useState(false);
 
     const [transparentLoader, setTransparentLoader] = useState(false);
 
@@ -33,13 +33,11 @@ export default function SignIn() {
         getFocused();
     }, [])
 
-
     const getFocused = () => {
         setTimeout(() => {
             setIsLoad(false)
         }, 1000);
     }
-
 
     const validationSchema = Yup.object().shape({
         email: Yup.string().required(""),
@@ -62,6 +60,7 @@ export default function SignIn() {
 
     const continueWithGoogle = async () => {
 
+        console.time("googleSiginIn----")
         setTransparentLoader(true)
         await GoogleSignin.signIn().then(async (res) => {
             // console.log("google-----------", JSON.stringify(res, null, 4))
@@ -74,27 +73,23 @@ export default function SignIn() {
                     // console.log("res----", JSON.stringify(res, null, 4))
                     setTimeout(async () => {
                         setUserDetails(res)
+                        encryptedStorage.set("userDetails", JSON.stringify(res));
                         setAccountDetails(prev => {
                             const updatedRes = { ...res, activeLogin: true }
                             if (prev?.length) {
                                 const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }));
-                                (async () => {
-                                    await AsyncStorage.setItem("accountDetails", JSON.stringify([...prevRes, updatedRes]))
-                                    await AsyncStorage.setItem("userDetails", JSON.stringify(res))
-                                })()
+                                encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]));
                                 return [...prevRes, updatedRes]
                             } else {
-                                (async () => {
-                                    await AsyncStorage.setItem("accountDetails", JSON.stringify([updatedRes]))
-                                    await AsyncStorage.setItem("userDetails", JSON.stringify(res))
-                                })()
+                                encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
                                 return [updatedRes]
                             }
                         })
-                        await AsyncStorage.setItem("isLogin", JSON?.stringify(true));
+                        storage.set("isLoggedIn", true)
                         setTransparentLoader(false)
                         setIsLoggedIn(true)
                     }, 1000);
+                    console.timeEnd("googleSiginIn----")
                 }).catch((e: any) => {
                     setTransparentLoader(false)
                 })
@@ -108,23 +103,24 @@ export default function SignIn() {
     }
 
     const loginWithEmailAndPassword = (email: string, password: string) => {
-
-
         signInWithEmailAndPassword(getAuth(), email, password).then((res: any) => {
             setTimeout(async () => {
                 setUserDetails(res)
+                storage.set("userDetails", JSON.stringify(res))
                 setAccountDetails(prev => {
                     const updatedRes = { ...res, activeLogin: true }
                     if (prev?.length) {
                         const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }))
+                        encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]))
                         return [...prevRes, updatedRes]
                     } else {
+                        encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
                         return [updatedRes]
                     }
                 })
                 setIsLoggedIn(true)
                 setButtonLoader(false);
-                await AsyncStorage.setItem("isLogin", JSON?.stringify(true));
+                storage.set("isLoggedIn", true)
             }, 2000);
             console.log("res---", JSON.stringify(res, null, 4))
         }).catch((e) => {

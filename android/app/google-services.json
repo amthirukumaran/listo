@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "950613133564-p786kuupie66664mgnv3cjh320le60va.apps.googleusercontent.com",
+          "client_id": "950613133564-8r1g1l9bogvf0hf9iouu3g66fokt73fk.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.listo",
-            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+            "certificate_hash": "0f2dcbacef8406e02ffd987d1aa9931e1df8ec61"
           }
         },
         {

@@ -1,7 +1,8 @@
 import RBSheet from "react-native-raw-bottom-sheet";
+import { useIsFocused } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useStallionUpdate, restart } from "react-native-stallion";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Keyboard, KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View, Modal, useWindowDimensions, ActivityIndicator, StatusBar } from "react-native";
 
@@ -14,16 +15,18 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 
 //Custom-Imports
+import { storage } from "../../../shared/config";
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import RestartApp from "../../../shared/restartDialog";
 import ListoContext from "../../../shared/listoContext";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Dashboard() {
 
     //@ts-ignore
     const refRBSheet = useRef<RBSheet>(null)
+
+    const isFocused = useIsFocused();
 
     const { width } = useWindowDimensions()
 
@@ -37,11 +40,16 @@ export default function Dashboard() {
 
     const { isRestartRequired } = useStallionUpdate()
 
-    useLayoutEffect(() => {
-        console.log("accountDetails", JSON.stringify(accountDetails, null, 4))
-        setIsLoad(true)
-        getFoucs()
-    }, [])
+    // useLayoutEffect(() => {
+    //     // console.log("accountDetails", JSON.stringify(accountDetails, null, 4))
+    //     getFoucs()
+    // }, [])
+
+    useEffect(() => {
+        if (isFocused) {
+            getFoucs()
+        }
+    }, [isFocused])
 
     useEffect(() => {
         checkForUpdates()
@@ -88,7 +96,8 @@ export default function Dashboard() {
                     setIsOpen(true)
                 } else {
                     setIsLoggedIn(false);
-                    await AsyncStorage?.removeItem("isLogin")
+                    // await AsyncStorage?.removeItem("isLogin")
+                    storage.delete("isLoggedIn")
                 }
             }, 400);
             console.log("signOut---->", JSON.stringify(res, null, 4))
@@ -135,7 +144,7 @@ export default function Dashboard() {
                         <ActivityIndicator size={30} color={appColors?.lightDark} />
                     </View>
                     :
-                    <View style={{ flex: 1, backgroundColor: appColors?.light }}>
+                    <View style={{ flex: 1, backgroundColor: appColors?.red }}>
                     </View>
                 }
                 <RBSheet customModalProps={{ statusBarTranslucent: true }} ref={refRBSheet} draggable={true} closeOnPressMask={true} height={accountDetails?.length > 1 ? 320 : 260} customStyles={{ container: { borderTopEndRadius: 20, borderTopStartRadius: 20 } }}>
