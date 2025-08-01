@@ -1,7 +1,9 @@
 import * as Yup from 'yup';
 import { useFormik } from "formik";
 import { Input } from '@rneui/base';
+import Snackbar from 'react-native-snackbar';
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useContext, useLayoutEffect, useState } from 'react';
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { GoogleAuthProvider, signInWithCredential, getAuth, signInWithEmailAndPassword } from "@react-native-firebase/auth";
@@ -11,7 +13,6 @@ import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Modal, Scroll
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import ListoContext from '../../../shared/listoContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { encryptedStorage, storage } from '../../../shared/config';
 
 export default function SignIn() {
@@ -22,7 +23,7 @@ export default function SignIn() {
 
     const [transparentLoader, setTransparentLoader] = useState(false);
 
-    const [isError, setIsError] = useState(false);
+    const [incorrectPassword, setIncorrectPassword] = useState(false);
 
     const [buttonLoader, setButtonLoader] = useState(false);
 
@@ -70,25 +71,24 @@ export default function SignIn() {
                 const auth = getAuth()
                 // console.log("inside------")
                 signInWithCredential(auth, credential).then((res: any) => {
-                    // console.log("res----", JSON.stringify(res, null, 4))
-                    setTimeout(async () => {
-                        setUserDetails(res)
-                        encryptedStorage.set("userDetails", JSON.stringify(res));
-                        setAccountDetails(prev => {
-                            const updatedRes = { ...res, activeLogin: true }
-                            if (prev?.length) {
-                                const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }));
-                                encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]));
-                                return [...prevRes, updatedRes]
-                            } else {
-                                encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
-                                return [updatedRes]
-                            }
-                        })
-                        storage.set("isLoggedIn", true)
-                        setTransparentLoader(false)
-                        setIsLoggedIn(true)
-                    }, 1000);
+                    console.log("res----", JSON.stringify(res, null, 4))
+                    setUserDetails(res)
+                    encryptedStorage.set("token", res)
+                    encryptedStorage.set("userDetails", JSON.stringify(res));
+                    setAccountDetails(prev => {
+                        const updatedRes = { ...res, activeLogin: true }
+                        if (prev?.length) {
+                            const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }));
+                            encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]));
+                            return [...prevRes, updatedRes]
+                        } else {
+                            encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
+                            return [updatedRes]
+                        }
+                    })
+                    storage.set("isLoggedIn", true)
+                    setTransparentLoader(false)
+                    setIsLoggedIn(true)
                     console.timeEnd("googleSiginIn----")
                 }).catch((e: any) => {
                     setTransparentLoader(false)
@@ -103,39 +103,61 @@ export default function SignIn() {
     }
 
     const loginWithEmailAndPassword = (email: string, password: string) => {
+
         signInWithEmailAndPassword(getAuth(), email, password).then((res: any) => {
-            setTimeout(async () => {
-                setUserDetails(res)
-                storage.set("userDetails", JSON.stringify(res))
-                setAccountDetails(prev => {
-                    const updatedRes = { ...res, activeLogin: true }
-                    if (prev?.length) {
-                        const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }))
-                        encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]))
-                        return [...prevRes, updatedRes]
-                    } else {
-                        encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
-                        return [updatedRes]
-                    }
-                })
-                setIsLoggedIn(true)
-                setButtonLoader(false);
-                storage.set("isLoggedIn", true)
-            }, 2000);
+            setUserDetails(res)
+            encryptedStorage.set("token", res?.user?.uid)
+            storage.set("userDetails", JSON.stringify(res))
+            setAccountDetails(prev => {
+                const updatedRes = { ...res, activeLogin: true }
+                if (prev?.length) {
+                    const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }))
+                    encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]))
+                    return [...prevRes, updatedRes]
+                } else {
+                    encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
+                    return [updatedRes]
+                }
+            })
+            setIsLoggedIn(true)
+            storage.set("isLoggedIn", true)
             console.log("res---", JSON.stringify(res, null, 4))
         }).catch((e) => {
-            setIsError(true)
-            setButtonLoader(false);
+            if (e?.code === "auth/wrong-password") {
+                setIncorrectPassword(true)
+                Snackbar.show({
+                    text: "Incorrect password. Please try again.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
+            } else if (e?.code === "auth/user-not-found") {
+                Snackbar.show({
+                    text: "We couldn’t find a user with this email.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
+            } else if (e?.code === "auth/invalid-email") {
+                Snackbar.show({
+                    text: "Email is invalid. Please enter a valid email address.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
+            } else {
+                Snackbar.show({
+                    text: "An error occurred. Please try again.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
+            }
             console.log("E.code--->", e.code)
-            console.log("E.msg--->", e.message)
-            console.log("E.name--->", e.name)
-            // console.log("e---->", JSON.stringify(e, null, 4))
+        }).finally(() => {
+            setButtonLoader(false)
         })
     }
 
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }} >
+        <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }} edges={["top"]} >
             <StatusBar backgroundColor={appColors?.light} barStyle={"dark-content"} />
             <KeyboardAvoidingView onStartShouldSetResponder={() => { Keyboard?.dismiss(); return false; }} style={{ flex: 1, backgroundColor: appColors?.light }}>
                 {isLoad ?
@@ -177,14 +199,14 @@ export default function SignIn() {
                                     labelStyle={{ fontFamily: appFonts?.medium, paddingBottom: 7, paddingLeft: 5, fontWeight: undefined, color: appColors?.lightDark, fontSize: 14 }}
                                     inputContainerStyle={{ backgroundColor: "", borderWidth: 1, borderRadius: 8, borderColor: appColors?.borderColor }}
                                 />
-                                {isError &&
+                                {incorrectPassword &&
                                     <View style={{ paddingHorizontal: 10, alignSelf: "flex-end", paddingTop: 8, paddingBottom: 5 }}>
-                                        <TouchableOpacity disabled={buttonLoader} onPress={() => { formik?.resetForm(); setIsError(false); navigation?.navigate("forgotPassword") }}>
+                                        <TouchableOpacity disabled={buttonLoader} onPress={() => { formik?.resetForm(); setIncorrectPassword(false); navigation?.navigate("forgotPassword") }}>
                                             <Text style={{ fontFamily: appFonts?.medium, fontSize: 14, color: appColors?.red }}>Forgot Password?</Text>
                                         </TouchableOpacity>
                                     </View>
                                 }
-                                <View style={{ paddingHorizontal: 10, paddingVertical: 15, paddingTop: !isError ? 32 : undefined }}>
+                                <View style={{ paddingHorizontal: 10, paddingVertical: 15, paddingTop: !incorrectPassword ? 32 : undefined }}>
                                     <TouchableOpacity disabled={buttonLoader && !formik?.isValid} onPress={() => { formik?.handleSubmit() }} activeOpacity={0.7} style={{ alignItems: "center", backgroundColor: appColors?.lightGrey, borderRadius: 8 }}>
                                         {buttonLoader ?
                                             <ActivityIndicator style={{ paddingVertical: 13 }} size={"small"} color={appColors?.light} />
@@ -214,7 +236,7 @@ export default function SignIn() {
                         <View style={{ height: 70, justifyContent: "center", alignItems: "center", backgroundColor: "", paddingHorizontal: 20 }}>
                             <View style={{ flexDirection: "row", gap: 5 }}>
                                 <Text style={{ fontFamily: appFonts?.medium, color: appColors?.lightDark, fontSize: 14 }}>{`Don't have an account?`}</Text>
-                                <TouchableOpacity disabled={buttonLoader} onPress={() => { formik?.resetForm(); setIsError(false); navigation?.navigate("signUp") }}>
+                                <TouchableOpacity disabled={buttonLoader} onPress={() => { formik?.resetForm(); setIncorrectPassword(false); navigation?.navigate("signUp") }}>
                                     <Text style={{ color: appColors?.dark, fontFamily: appFonts?.bold, textDecorationLine: "underline", fontSize: 14 }}>Sign up</Text>
                                 </TouchableOpacity>
                             </View>

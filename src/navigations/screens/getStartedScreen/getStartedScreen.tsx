@@ -1,5 +1,6 @@
 import { useContext, useState } from "react";
-import { Image, SafeAreaView, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 //Custom-Imports
 import { storage } from "../../../shared/config";
