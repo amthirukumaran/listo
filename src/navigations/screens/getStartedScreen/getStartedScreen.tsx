@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 //Custom-Imports
 import { storage } from "../../../shared/config";
@@ -60,6 +60,7 @@ export default function GetStartedScreen() {
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: "whitesmoke" }}>
+            <StatusBar barStyle={"dark-content"} />
             <View style={{ paddingHorizontal: 20, height: 100, justifyContent: "center" }}>
                 {currentData?.showSkip &&
                     <TouchableOpacity onPress={() => { getStartedClose() }} style={{ borderRadius: 15, backgroundColor: appColors?.lightGrey, alignSelf: "flex-end" }}>

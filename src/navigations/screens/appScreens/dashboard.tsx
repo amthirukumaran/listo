@@ -1,5 +1,5 @@
 import RBSheet from "react-native-raw-bottom-sheet";
-import { useIsFocused } from "@react-navigation/native";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useStallionUpdate, restart } from "react-native-stallion";
@@ -26,6 +26,8 @@ export default function Dashboard() {
     //@ts-ignore
     const refRBSheet = useRef<RBSheet>(null)
 
+    const navigation = useNavigation<any>();
+
     const isFocused = useIsFocused();
 
     const { width } = useWindowDimensions()
@@ -39,11 +41,6 @@ export default function Dashboard() {
     const { setIsLoggedIn, userDetails, accountDetails, setAccountDetails } = useContext(ListoContext);
 
     const { isRestartRequired } = useStallionUpdate()
-
-    // useLayoutEffect(() => {
-    //     // console.log("accountDetails", JSON.stringify(accountDetails, null, 4))
-    //     getFoucs()
-    // }, [])
 
     useEffect(() => {
         if (isFocused) {
@@ -114,7 +111,7 @@ export default function Dashboard() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }} >
+        <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }} edges={["top"]} >
             <KeyboardAvoidingView onStartShouldSetResponder={() => { Keyboard.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light }}>
                 <StatusBar barStyle={"dark-content"} />
                 <View style={{ paddingHorizontal: 20, paddingVertical: 20, flexDirection: "row", justifyContent: "space-between", gap: 20, backgroundColor: "" }}>
@@ -128,7 +125,7 @@ export default function Dashboard() {
                     </View>
                     <View style={{ flex: 0.25, flexDirection: "row", gap: 23, alignItems: "center", backgroundColor: "", justifyContent: "flex-end" }}>
                         <View>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => { navigation.navigate("SearchScreen") }}>
                                 <Octicons name="search" size={22} color={appColors?.lightDark} />
                             </TouchableOpacity>
                         </View>
@@ -144,7 +141,7 @@ export default function Dashboard() {
                         <ActivityIndicator size={30} color={appColors?.lightDark} />
                     </View>
                     :
-                    <View style={{ flex: 1, backgroundColor: appColors?.red }}>
+                    <View style={{ flex: 1 }}>
                     </View>
                 }
                 <RBSheet customModalProps={{ statusBarTranslucent: true }} ref={refRBSheet} draggable={true} closeOnPressMask={true} height={accountDetails?.length > 1 ? 320 : 260} customStyles={{ container: { borderTopEndRadius: 20, borderTopStartRadius: 20 } }}>
@@ -152,7 +149,7 @@ export default function Dashboard() {
                         <View style={{ paddingVertical: 10, paddingTop: 5 }}>
                             <Text style={{ fontFamily: appFonts?.bold, color: appColors?.dark, fontSize: 16, textAlign: "center" }}>Accounts</Text>
                         </View>
-                        <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: appColors?.light, paddingHorizontal: 20, justifyContent: "center" }} showsVerticalScrollIndicator={false}>
+                        <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, justifyContent: "center" }} showsVerticalScrollIndicator={false}>
                             {accountDetails?.map((item: any, index: number) => (
                                 <TouchableOpacity key={index} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: appColors?.lightBackground, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 6, marginBottom: accountDetails?.length - 1 == index ? 15 : 10 }}>
                                     <View style={{ flex: 0.8, flexDirection: "row", gap: 10, alignItems: "center" }}>
