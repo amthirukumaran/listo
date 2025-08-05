@@ -19,7 +19,7 @@ export default function SignIn() {
 
     const navigation: any = useNavigation();
 
-    const [isLoad, setIsLoad] = useState(false);
+    const [isLoad, setIsLoad] = useState(true);
 
     const [transparentLoader, setTransparentLoader] = useState(false);
 
@@ -30,7 +30,6 @@ export default function SignIn() {
     const { setIsLoggedIn, setUserDetails, setAccountDetails } = useContext(ListoContext);
 
     useLayoutEffect(() => {
-        setIsLoad(true)
         getFocused();
     }, [])
 
@@ -105,9 +104,22 @@ export default function SignIn() {
     const loginWithEmailAndPassword = (email: string, password: string) => {
 
         signInWithEmailAndPassword(getAuth(), email, password).then((res: any) => {
+            //handles the user already logged in with this email
+            const tokenString = encryptedStorage?.getString("token");
+            const tokenList = tokenString ? JSON.parse(tokenString) : [];
+            if (tokenList.includes(res?.user?.uid)) {
+                console.log("User already logged in with this email");
+                Snackbar.show({
+                    text: "This account is already in use. Try logging in with another email.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                });
+                return;
+            }
+            //holds the current user details
             setUserDetails(res)
-            encryptedStorage.set("token", res?.user?.uid)
-            storage.set("userDetails", JSON.stringify(res))
+            encryptedStorage.set("userDetails", JSON.stringify(res))
+            //holds details of user accounts
             setAccountDetails(prev => {
                 const updatedRes = { ...res, activeLogin: true }
                 if (prev?.length) {
@@ -119,10 +131,21 @@ export default function SignIn() {
                     return [updatedRes]
                 }
             })
+            //handles the login status of the user
             setIsLoggedIn(true)
             storage.set("isLoggedIn", true)
-            console.log("res---", JSON.stringify(res, null, 4))
+            //handles the token of the user
+            const token = encryptedStorage.getString("token")
+            if (token?.length) {
+                const parsedToken = JSON.parse(token);
+                if (!parsedToken?.includes(res?.user?.uid)) {
+                    encryptedStorage.set("token", JSON.stringify([...parsedToken, res?.user?.uid]))
+                }
+            } else {
+                encryptedStorage.set("token", JSON.stringify([res?.user?.uid]))
+            }
         }).catch((e) => {
+            console.log("E.code--->", e.code)
             if (e?.code === "auth/wrong-password") {
                 setIncorrectPassword(true)
                 Snackbar.show({
@@ -142,6 +165,12 @@ export default function SignIn() {
                     duration: Snackbar?.LENGTH_LONG,
                     fontFamily: appFonts?.medium
                 })
+            } else if (e?.code === "auth/too-many-requests") {
+                Snackbar.show({
+                    text: "Too many requests. Please try again later.",
+                    duration: Snackbar?.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
             } else {
                 Snackbar.show({
                     text: "An error occurred. Please try again.",
@@ -149,7 +178,6 @@ export default function SignIn() {
                     fontFamily: appFonts?.medium
                 })
             }
-            console.log("E.code--->", e.code)
         }).finally(() => {
             setButtonLoader(false)
         })

@@ -1,8 +1,8 @@
 import RBSheet from "react-native-raw-bottom-sheet";
-import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useStallionUpdate, restart } from "react-native-stallion";
+import { useIsFocused, useNavigation } from "@react-navigation/native";
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { Keyboard, KeyboardAvoidingView, ScrollView, Text, TouchableOpacity, View, Modal, useWindowDimensions, ActivityIndicator, StatusBar } from "react-native";
 
@@ -45,6 +45,7 @@ export default function Dashboard() {
     useEffect(() => {
         if (isFocused) {
             getFoucs()
+            console.log("accountDetails: ", JSON.stringify(accountDetails, null, 4))
         }
     }, [isFocused])
 
@@ -76,27 +77,34 @@ export default function Dashboard() {
     const handleAddAccount = () => {
         refRBSheet?.current?.close();
         setTimeout(() => {
-            clickToSignOut(false)
+            setIsLoggedIn(false)
         }, 400);
+    }
+
+
+    const handleLoginthisAccount = () => {
+        refRBSheet?.current?.close();
+
     }
 
     const clickToSignOut = (signOut: boolean) => {
         GoogleSignin?.signOut().then((res: any) => {
-            let dataLength: number;
-            setTimeout(async () => {
+            let dataLength: number = 0;
+            if (signOut) {
                 setAccountDetails((prev: any) => {
                     let data = prev?.filter((item: any) => item?.activeLogin == false)
                     dataLength = data?.length;
                     return data
                 })
+                console.log("dataLength: ", dataLength)
                 if (dataLength) {
+                    console.log("inside-------")
                     setIsOpen(true)
                 } else {
                     setIsLoggedIn(false);
-                    // await AsyncStorage?.removeItem("isLogin")
                     storage.delete("isLoggedIn")
                 }
-            }, 400);
+            }
             console.log("signOut---->", JSON.stringify(res, null, 4))
         }).catch((e: any) => {
             console.log("logOutError--->", JSON.stringify(e, null, 4))
@@ -151,7 +159,7 @@ export default function Dashboard() {
                         </View>
                         <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20, justifyContent: "center" }} showsVerticalScrollIndicator={false}>
                             {accountDetails?.map((item: any, index: number) => (
-                                <TouchableOpacity key={index} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: appColors?.lightBackground, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 6, marginBottom: accountDetails?.length - 1 == index ? 15 : 10 }}>
+                                <TouchableOpacity onPress={() => handleLoginthisAccount()} key={index} style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", backgroundColor: appColors?.lightBackground, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 6, marginBottom: accountDetails?.length - 1 == index ? 15 : 10 }}>
                                     <View style={{ flex: 0.8, flexDirection: "row", gap: 10, alignItems: "center" }}>
                                         <View style={{ backgroundColor: appColors?.secondary, borderRadius: 4 }}>
                                             <Text style={{ fontFamily: appFonts?.bold, padding: 10, paddingVertical: 5, fontSize: 16, color: appColors?.lightDark }}>{item?.additionalUserInfo?.profile?.name[0]?.toUpperCase() ?? item?.user?.email[0]?.toUpperCase()}</Text>

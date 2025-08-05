@@ -2,9 +2,10 @@ import { Divider, SearchBar } from '@rneui/base';
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Keyboard, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Keyboard, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
@@ -13,10 +14,20 @@ const SearchScreen = () => {
 
     //@ts-ignore
     const refRBSheet = useRef<RBSheet>(null)
+    //Variable used to control the loading state
+    const [isload, setIsload] = useState<boolean>(false);
     //Variable used to hold the searchText
-    const [searchText, setSearchText] = useState("");
+    const [searchText, setSearchText] = useState<string | undefined>("");
+    //Variable used to store the selected sort option
+    const [selectedSort, setSelectedSort] = useState<{ id: number | null }>({ id: null })
 
-    const sortby = ["Best Matches", "Last edited: Newest First", "Last edited: Oldest First", "Created: Newest First", "Created: Oldest First"]
+    const sortby = [
+        { id: 1, value: "Best Matches" },
+        { id: 2, value: "Recently Created first" },
+        { id: 3, value: "Recently Created last" },
+        { id: 4, value: "Recently updated first" },
+        { id: 5, value: "Recently updated Last" }
+    ]
 
     useEffect(() => {
         if (searchText) {
@@ -25,6 +36,14 @@ const SearchScreen = () => {
 
         }
     }, [searchText])
+
+    const handleSortOption = (id: number | null) => {
+        setIsload(true);
+        setSelectedSort({ id: id })
+        setTimeout(() => {
+            setIsload(false)
+        }, 1000);
+    }
 
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }}>
@@ -49,32 +68,37 @@ const SearchScreen = () => {
                     />
                 </View>
                 <TouchableOpacity onPress={() => { Keyboard.dismiss(); setTimeout(() => { refRBSheet?.current?.open() }, 200); }} style={{ aspectRatio: 1, backgroundColor: appColors?.dark, padding: 8, borderRadius: 99 }}>
-                    <Ionicons name="filter" size={22} color={appColors?.secondary} />
+                    <Ionicons name="filter" size={23} color={appColors?.secondary} />
                 </TouchableOpacity>
             </View>
-            <View style={{ flex: 1 }}>
+            {isload ?
+                <View style={{ flex: 1, justifyContent: "center", alignItems: "center", marginTop: -100 }}>
+                    <ActivityIndicator size={30} color={appColors?.lightDark} />
+                </View>
+                :
+                <View style={{ flex: 1 }}>
 
-            </View>
+                </View>
+            }
             <RBSheet ref={refRBSheet} draggable customModalProps={{ statusBarTranslucent: true }} height={295} customStyles={{ container: { borderTopEndRadius: 20, borderTopStartRadius: 20 } }}>
-                <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }}>
-                    <View style={{ alignSelf: "center", marginTop: 5, marginBottom: 10 }}>
+                <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light, paddingHorizontal: 20, }}>
+                    <View style={{ alignSelf: "center", marginTop: 5, marginBottom: 12 }}>
                         <Text style={{ fontFamily: appFonts?.bold, color: appColors?.dark, fontSize: 14 }}>Sort by</Text>
                     </View>
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, backgroundColor: appColors?.light, paddingHorizontal: 20, justifyContent: "center", overflow: "hidden" }}>
-                        <View style={{ backgroundColor: appColors?.secondary, borderRadius: 10, overflow: "hidden" }}>
-                            {sortby?.map((itm, ind) =>
-                                <TouchableOpacity key={ind}>
-                                    <View style={{ paddingVertical: 12, paddingHorizontal: 15 }}>
-                                        <Text style={{ fontFamily: appFonts?.medium, color: appColors?.dark }}>{itm}</Text>
-                                    </View>
-                                    <Divider />
-                                </TouchableOpacity>
-                            )}
-                        </View>
+                    <Divider style={{ marginTop: 1, marginBottom: 8 }} />
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, backgroundColor: appColors?.light, justifyContent: "center", overflow: "hidden" }}>
+                        {sortby?.map((itm, ind) =>
+                            <TouchableOpacity key={ind} onPress={() => { refRBSheet?.current?.close(); setTimeout(() => handleSortOption(itm?.id)); }} >
+                                <View style={{ paddingVertical: 10, paddingHorizontal: 15, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                                    <Text style={{ fontFamily: appFonts?.medium, color: appColors?.lightGrey }}>{itm?.value}</Text>
+                                    <MaterialIcons name='check' color={(selectedSort?.id === itm?.id) ? appColors?.lightGrey : appColors?.light} size={22} />
+                                </View>
+                            </TouchableOpacity>
+                        )}
                     </ScrollView>
                 </SafeAreaView>
-            </RBSheet>
-        </SafeAreaView>
+            </RBSheet >
+        </SafeAreaView >
     )
 }
 
