@@ -4,9 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { ActivityIndicator, Keyboard, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
+//Icon-Imports
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
+//Custom-Imports
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 
@@ -46,7 +48,7 @@ const SearchScreen = () => {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }}>
+        <SafeAreaView onStartShouldSetResponder={() => { Keyboard.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light }}>
             <StatusBar barStyle={"dark-content"} />
             <View style={{ paddingHorizontal: 15, marginTop: 20, flexDirection: "row", gap: 10, alignItems: "center" }}>
                 <View style={{ flex: 1 }}>

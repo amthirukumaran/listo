@@ -13,24 +13,29 @@ import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Modal, Scroll
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import ListoContext from '../../../shared/listoContext';
+import { sessionHandler } from '../../../shared/sessionHandler';
 import { encryptedStorage, storage } from '../../../shared/config';
 
 export default function SignIn() {
 
+    //Variable used to handle the navigation
     const navigation: any = useNavigation();
-
+    //Variable used to handle the mainScreen loader
     const [isLoad, setIsLoad] = useState(true);
-
+    //Variable used to handle the transparentLoader
     const [transparentLoader, setTransparentLoader] = useState(false);
-
+    //Variable used to show forgot password
     const [incorrectPassword, setIncorrectPassword] = useState(false);
-
+    //Variable used to disable ui thread while api call
     const [buttonLoader, setButtonLoader] = useState(false);
-
-    const { setIsLoggedIn, setUserDetails, setAccountDetails } = useContext(ListoContext);
+    //Variable used to control the stack
+    const { setIsLoggedIn } = useContext(ListoContext);
+    //helping functions
+    const { checkIfLoggedIn, storeCurrentUserDetails } = sessionHandler();
 
     useLayoutEffect(() => {
         getFocused();
+        console.log("SignIn screen loaded-------------");
     }, [])
 
     const getFocused = () => {
@@ -60,90 +65,108 @@ export default function SignIn() {
 
     const continueWithGoogle = async () => {
 
-        console.time("googleSiginIn----")
         setTransparentLoader(true)
         await GoogleSignin.signIn().then(async (res) => {
-            // console.log("google-----------", JSON.stringify(res, null, 4))
             if (res?.type === "success") {
                 const credential = await GoogleAuthProvider.credential(res?.data?.idToken);
-                // console.log("credentialss----", JSON.stringify(credential, null, 4))
                 const auth = getAuth()
-                // console.log("inside------")
-                signInWithCredential(auth, credential).then((res: any) => {
-                    console.log("res----", JSON.stringify(res, null, 4))
-                    setUserDetails(res)
-                    encryptedStorage.set("token", res)
-                    encryptedStorage.set("userDetails", JSON.stringify(res));
-                    setAccountDetails(prev => {
-                        const updatedRes = { ...res, activeLogin: true }
-                        if (prev?.length) {
-                            const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }));
-                            encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]));
-                            return [...prevRes, updatedRes]
+                signInWithCredential(auth, credential).then((response: any) => {
+
+                    if (checkIfLoggedIn(response?.user?.uid, true)) {
+                        GoogleSignin.signOut()
+                        console.log("User already logged in with this email");
+                        setTransparentLoader(false)
+                        setTimeout(() => {
+                            Snackbar.show({
+                                text: "You're already using this account. Log in with a different one.",
+                                duration: Snackbar?.LENGTH_LONG,
+                                fontFamily: appFonts?.medium
+                            });
+                        }, 400);
+                        return;
+                    }
+
+                    storeCurrentUserDetails(response).then((userResponse: any) => {
+                        if (userResponse?.success) {
+                            //handles the token of the user
+                            const token = encryptedStorage.getString("token")
+                            if (token?.length) {
+                                const parsedToken = JSON.parse(token);
+                                if (!parsedToken?.includes(response?.user?.uid)) {
+                                    encryptedStorage.set("token", JSON.stringify([...parsedToken, response?.user?.uid]))
+                                }
+                            } else {
+                                encryptedStorage.set("token", JSON.stringify([response?.user?.uid]))
+                            }
+                            setIsLoggedIn(true)
+                            setTransparentLoader(false)
+                            storage.set("isLoggedIn", true)
                         } else {
-                            encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
-                            return [updatedRes]
+                            Snackbar.show({
+                                text: "Something went wrong. please try again later",
+                                duration: Snackbar.LENGTH_LONG,
+                                textColor: appColors.light,
+                            });
                         }
                     })
-                    storage.set("isLoggedIn", true)
-                    setTransparentLoader(false)
-                    setIsLoggedIn(true)
-                    console.timeEnd("googleSiginIn----")
+
                 }).catch((e: any) => {
                     setTransparentLoader(false)
                 })
             } else {
                 setTransparentLoader(false)
-                console.log("outside if----")
+                setTimeout(() => {
+                    Snackbar.show({
+                        text: "Something went wrong. Please try again later.",
+                        duration: Snackbar.LENGTH_LONG,
+                        fontFamily: appFonts?.medium
+                    })
+                }, 400);
             }
         }).catch(() => {
-            setTransparentLoader(false);
+            setTransparentLoader(false)
+            setTimeout(() => {
+                Snackbar.show({
+                    text: "Something went wrong. Please try again later.",
+                    duration: Snackbar.LENGTH_LONG,
+                    fontFamily: appFonts?.medium
+                })
+            }, 400);
         })
     }
 
+    // Function to handle login with email and password
     const loginWithEmailAndPassword = (email: string, password: string) => {
 
-        signInWithEmailAndPassword(getAuth(), email, password).then((res: any) => {
-            //handles the user already logged in with this email
-            const tokenString = encryptedStorage?.getString("token");
-            const tokenList = tokenString ? JSON.parse(tokenString) : [];
-            if (tokenList.includes(res?.user?.uid)) {
+        signInWithEmailAndPassword(getAuth(), email, password).then((response: any) => {
+
+            if (checkIfLoggedIn(response?.user?.uid)) {
                 console.log("User already logged in with this email");
-                Snackbar.show({
-                    text: "This account is already in use. Try logging in with another email.",
-                    duration: Snackbar?.LENGTH_LONG,
-                    fontFamily: appFonts?.medium
-                });
                 return;
             }
-            //holds the current user details
-            setUserDetails(res)
-            encryptedStorage.set("userDetails", JSON.stringify(res))
-            //holds details of user accounts
-            setAccountDetails(prev => {
-                const updatedRes = { ...res, activeLogin: true }
-                if (prev?.length) {
-                    const prevRes = prev?.map((item: any) => ({ ...item, activeLogin: false }))
-                    encryptedStorage.set("accountDetails", JSON.stringify([...prevRes, updatedRes]))
-                    return [...prevRes, updatedRes]
+
+            storeCurrentUserDetails(response).then((userResponse: any) => {
+                if (userResponse?.success) {
+                    //handles the token of the user
+                    const token = encryptedStorage.getString("token")
+                    if (token?.length) {
+                        const parsedToken = JSON.parse(token);
+                        encryptedStorage.set("token", JSON.stringify([...parsedToken, response?.user?.uid]))
+                    } else {
+                        encryptedStorage.set("token", JSON.stringify([response?.user?.uid]))
+                    }
+                    //handles the login status of the user
+                    setIsLoggedIn(true)
+                    storage.set("isLoggedIn", true)
                 } else {
-                    encryptedStorage.set("accountDetails", JSON.stringify([updatedRes]))
-                    return [updatedRes]
+                    Snackbar.show({
+                        text: "Something went wrong. please try again later",
+                        duration: Snackbar.LENGTH_LONG,
+                        textColor: appColors.light,
+                    });
                 }
             })
-            //handles the login status of the user
-            setIsLoggedIn(true)
-            storage.set("isLoggedIn", true)
-            //handles the token of the user
-            const token = encryptedStorage.getString("token")
-            if (token?.length) {
-                const parsedToken = JSON.parse(token);
-                if (!parsedToken?.includes(res?.user?.uid)) {
-                    encryptedStorage.set("token", JSON.stringify([...parsedToken, res?.user?.uid]))
-                }
-            } else {
-                encryptedStorage.set("token", JSON.stringify([res?.user?.uid]))
-            }
+
         }).catch((e) => {
             console.log("E.code--->", e.code)
             if (e?.code === "auth/wrong-password") {
@@ -155,7 +178,7 @@ export default function SignIn() {
                 })
             } else if (e?.code === "auth/user-not-found") {
                 Snackbar.show({
-                    text: "We couldn’t find a user with this email.",
+                    text: `We couldn’t find a user with this email.`,
                     duration: Snackbar?.LENGTH_LONG,
                     fontFamily: appFonts?.medium
                 })
@@ -183,7 +206,6 @@ export default function SignIn() {
         })
     }
 
-
     return (
         <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light }} edges={["top"]} >
             <StatusBar backgroundColor={appColors?.light} barStyle={"dark-content"} />
@@ -193,7 +215,7 @@ export default function SignIn() {
                         <ActivityIndicator size={30} color={appColors?.lightDark} />
                     </View>
                     :
-                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, backgroundColor: "" }}>
+                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
                         <View style={{ flex: 1, paddingTop: 70 }}>
                             <View style={{ alignItems: "center" }}>
                                 <Image
