@@ -23,7 +23,7 @@ export default function Rootstack() {
     }
 
     return (
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        <RootStack.Navigator screenOptions={{ headerShown: false, cardOverlayEnabled: false }}>
             {isLoggedIn ?
                 <RootStack.Screen name="appStack" component={Appstack} />
                 :

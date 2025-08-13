@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Image, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 //Custom-Imports
@@ -10,8 +10,12 @@ import ListoContext from "../../../shared/listoContext";
 
 export default function GetStartedScreen() {
 
+    //handles the safeArea
+    const { top, bottom } = useSafeAreaInsets()
+    //handles the listo workflow
     const { setShowGetStarted } = useContext(ListoContext);
-
+    //Variable holds the index
+    const [index, setIndex] = useState(0);
     //Variable stores the tour data
     const tourData = [
         {
@@ -39,11 +43,10 @@ export default function GetStartedScreen() {
             action: "Continue"
         },
     ];
-
-    //Variable holds the index
-    const [index, setIndex] = useState(0);
     //variable holds the currentIndex
     const currentData = tourData[index]
+
+
 
     const handleIndex = () => {
         if (index < tourData.length - 1) {
@@ -59,7 +62,7 @@ export default function GetStartedScreen() {
     }
 
     return (
-        <SafeAreaView style={{ flex: 1, backgroundColor: "whitesmoke" }}>
+        <View style={{ flex: 1, backgroundColor: "whitesmoke", paddingTop: top, paddingBottom: bottom }}>
             <StatusBar barStyle={"dark-content"} />
             <View style={{ paddingHorizontal: 20, height: 100, justifyContent: "center" }}>
                 {currentData?.showSkip &&
@@ -86,6 +89,6 @@ export default function GetStartedScreen() {
                     <Text style={{ color: appColors?.light, fontFamily: appFonts?.bold, paddingVertical: 15, fontSize: 16 }}>{currentData?.action}</Text>
                 </TouchableOpacity>
             </View>
-        </SafeAreaView>
+        </View>
     )
 }

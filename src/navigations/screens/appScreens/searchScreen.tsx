@@ -1,8 +1,8 @@
 import { Divider, SearchBar } from '@rneui/base';
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useEffect, useRef, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator, Keyboard, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 //Icon-Imports
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -14,6 +14,8 @@ import { appColors } from "../../../shared/appColors";
 
 const SearchScreen = () => {
 
+    //handles the safeArea
+    const { top, bottom } = useSafeAreaInsets();
     //@ts-ignore
     const refRBSheet = useRef<RBSheet>(null)
     //Variable used to control the loading state
@@ -48,9 +50,9 @@ const SearchScreen = () => {
     }
 
     return (
-        <SafeAreaView onStartShouldSetResponder={() => { Keyboard.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light }}>
+        <KeyboardAvoidingView onStartShouldSetResponder={() => { Keyboard.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light, paddingTop: top, paddingBottom: bottom }}>
             <StatusBar barStyle={"dark-content"} />
-            <View style={{ paddingHorizontal: 15, marginTop: 20, flexDirection: "row", gap: 10, alignItems: "center" }}>
+            <View style={{ paddingHorizontal: 15, marginTop: 15, flexDirection: "row", gap: 10, alignItems: "center" }}>
                 <View style={{ flex: 1 }}>
                     <SearchBar
                         value={searchText}
@@ -83,7 +85,7 @@ const SearchScreen = () => {
                 </View>
             }
             <RBSheet ref={refRBSheet} draggable customModalProps={{ statusBarTranslucent: true }} height={295} customStyles={{ container: { borderTopEndRadius: 20, borderTopStartRadius: 20 } }}>
-                <SafeAreaView style={{ flex: 1, backgroundColor: appColors?.light, paddingHorizontal: 20, }}>
+                <View style={{ flex: 1, backgroundColor: appColors?.light, paddingHorizontal: 20, paddingBottom: bottom }}>
                     <View style={{ alignSelf: "center", marginTop: 5, marginBottom: 12 }}>
                         <Text style={{ fontFamily: appFonts?.bold, color: appColors?.dark, fontSize: 14 }}>Sort by</Text>
                     </View>
@@ -98,9 +100,9 @@ const SearchScreen = () => {
                             </TouchableOpacity>
                         )}
                     </ScrollView>
-                </SafeAreaView>
+                </View>
             </RBSheet >
-        </SafeAreaView >
+        </KeyboardAvoidingView >
     )
 }
 

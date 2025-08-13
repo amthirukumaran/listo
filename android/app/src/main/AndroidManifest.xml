@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
       android:name=".MainApplication"
@@ -10,6 +12,12 @@
       android:theme="@style/AppTheme"
       android:extractNativeLibs="true"
       android:supportsRtl="true">
+
+
+      <!-- <meta-data
+      android:name="com.google.firebase.messaging.default_notification_icon"
+      android:resource="@drawable/logo" /> -->
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
@@ -22,5 +30,12 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+
+      <!-- Notifee background service -->
+      <service
+          android:name="app.notifee.core.Receiver"
+          android:permission="android.permission.BIND_JOB_SERVICE"
+          android:exported="true" />
     </application>
+
 </manifest>

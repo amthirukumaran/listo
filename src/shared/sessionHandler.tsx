@@ -1,12 +1,12 @@
 import { useContext } from "react";
 import Snackbar from "react-native-snackbar";
+import { signInWithCustomToken } from "@react-native-firebase/auth";
 
 //custom-Imports
+import ListoAPI from "./interceptor";
 import { appFonts } from "./appFonts";
 import ListoContext from "./listoContext";
-import { encryptedStorage } from "./config";
-import ListoAPI from "./interceptor";
-import { firebase, signInWithCustomToken } from "@react-native-firebase/auth";
+import { auth, encryptedStorage } from "./config";
 
 
 export const sessionHandler = () => {
@@ -74,7 +74,7 @@ export const sessionHandler = () => {
             } else {
                 const uid = accountDetails[0]?.uid
                 ListoAPI?.get(`/custom-token?uid=${uid}`).then((listoResponse: any) => {
-                    signInWithCustomToken(firebase.auth(), listoResponse?.data?.token).then(() => {
+                    signInWithCustomToken(auth, listoResponse?.data?.token).then(() => {
                         let currentUser = accountDetails?.find((item: any) => item?.uid === uid)
                         encryptedStorage?.delete("userDetails")
                         resolve({ success: true, userDetails: currentUser, accountDetails })

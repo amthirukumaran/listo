@@ -7,13 +7,17 @@ import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityI
 //Custom-Imports
 import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ForgotPassword() {
 
+    //handles the safeArea
+    const { top, bottom } = useSafeAreaInsets();
+    //Variable used to handle the navigation
     const navigation: any = useNavigation();
 
     return (
-        <KeyboardAvoidingView onStartShouldSetResponder={() => { Keyboard?.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light }}>
+        <KeyboardAvoidingView onStartShouldSetResponder={() => { Keyboard?.dismiss(); return false }} style={{ flex: 1, backgroundColor: appColors?.light, paddingTop: top, paddingBottom: bottom }}>
             <View style={{ alignSelf: "flex-end", paddingHorizontal: 20, paddingVertical: 20 }}>
                 <TouchableOpacity onPress={() => navigation?.goBack()}>
                     <MaterialCommunityIcons name='close' size={26} color={appColors?.dark} />

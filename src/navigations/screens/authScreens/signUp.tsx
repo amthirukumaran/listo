@@ -1,4 +1,5 @@
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { KeyboardAvoidingView, Text, TouchableOpacity, View } from "react-native";
 
 //Icon-Imports
@@ -10,10 +11,13 @@ import { appColors } from "../../../shared/appColors";
 
 export default function SignUp() {
 
+    //hanled the safeArea
+    const { top } = useSafeAreaInsets();
+    //Variable used to control the navigation
     const navigation: any = useNavigation();
 
     return (
-        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: appColors?.light }}>
+        <KeyboardAvoidingView style={{ flex: 1, backgroundColor: appColors?.light, paddingTop: top }}>
             <View style={{ alignSelf: "flex-end", paddingHorizontal: 20, paddingVertical: 20 }}>
                 <TouchableOpacity onPress={() => navigation?.goBack()}>
                     <MaterialCommunityIcons name='close' size={26} color={appColors?.dark} />
