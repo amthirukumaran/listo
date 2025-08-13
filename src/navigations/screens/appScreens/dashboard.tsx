@@ -22,12 +22,11 @@ import { appFonts } from "../../../shared/appFonts";
 import { appColors } from "../../../shared/appColors";
 import RestartApp from "../../../shared/restartDialog";
 import ListoContext from "../../../shared/listoContext";
-import { auth, encryptedStorage, storage } from "../../../shared/config";
+import { auth, encryptedStorage, initPushNotifications, storage } from "../../../shared/config";
 
 //Service-Imports
 import ListoAPI from "../../../shared/interceptor";
 import { getAnalytics, logEvent } from "@react-native-firebase/analytics";
-import { initPushNotifications } from "../../../shared/pushNotification";
 
 
 export default function Dashboard() {
