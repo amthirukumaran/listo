@@ -80,7 +80,7 @@ function App() {
   }
 
   return (
-    <ListoContext.Provider value={{ showGetStarted: showGetStarted, setShowGetStarted: setShowGetStarted, userDetails: userDetails, setUserDetails: setUserDetails, isLoggedIn: isLoggedIn, setIsLoggedIn: setIsLoggedIn, accountDetails: accountDetails, setAccountDetails: setAccountDetails }}>
+    <ListoContext.Provider value={{ showGetStarted, setShowGetStarted, userDetails, setUserDetails, isLoggedIn, setIsLoggedIn, accountDetails, setAccountDetails }}>
       <NavigationContainer>
         <SafeAreaProvider initialMetrics={initialWindowMetrics} >
           <Rootstack />

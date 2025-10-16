@@ -182,7 +182,9 @@ export default function Dashboard() {
 
         setTransparentLoader(true)
 
-        ListoAPI?.get(`/custom-token?uid=${currentUid}`).then((listoResponse: any) => {
+        const controller = new AbortController()
+
+        ListoAPI?.get(`/custom-token?uid=${currentUid}`, { signal: controller.signal }).then((listoResponse: any) => {
             console.log(JSON.stringify(listoResponse, null, 4));
             signInWithCustomToken(auth, listoResponse?.data?.token).then(customTokenResponse => {
                 let currentUser: any;

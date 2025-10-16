@@ -1,10 +1,11 @@
-import { Divider, Icon, Image, Input } from "@rneui/base";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { useEffect, useRef, useState } from "react";
+import { getStorage, getDownloadURL, ref, uploadBytes, putFile } from '@react-native-firebase/storage';
 import { useNavigation } from "@react-navigation/native";
+import ImagePicker from 'react-native-image-crop-picker';
+import { Divider, Icon, Image, Input } from "@rneui/base";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { launchImageLibrary } from 'react-native-image-picker';
-import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Keyboard, KeyboardAvoidingView, Modal, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 
 //Icon-Imports
 import Feather from 'react-native-vector-icons/Feather';
@@ -32,6 +33,8 @@ const AddTask = () => {
     const [coverImage, setCoverImage] = useState<any>();
 
     const [width, setWidth] = useState(0)
+
+    const { width: screenWidth } = useWindowDimensions()
 
     const bottomData = [
         [
@@ -63,13 +66,25 @@ const AddTask = () => {
                 break;
             }
             case "addCover": {
-                launchImageLibrary({ mediaType: "photo", quality: 1, selectionLimit: 1 }).then((res) => {
-                    if (res?.assets?.length) {
-                        setCoverImage(res?.assets[0]?.uri)
-                    }
-                    console.log("res----", JSON.stringify(res, null, 4))
+                ImagePicker.openPicker({ mediaType: "photo" }).then((res: any) => {
+                    console.log("res----", res)
+                    ImagePicker.openCropper({
+                        path: res?.path,
+                        mediaType: "photo",
+                        width: screenWidth,
+                        height: 180,
+                        cropping: true,
+                        cropperToolbarTitle: "Listo Image Cropper",
+                        freeStyleCropEnabled: true
+                    }).then(async (res) => {
+                        console.log("res----", res)
+                        setCoverImage({ uri: res?.path })
+                        handleCoverImage(res)
+                    }).catch((e) => {
+                        console.log(e)
+                    })
                 }).catch((e) => {
-                    console.log("e---", JSON.stringify(e, null, 4))
+                    console.log("Something went wrong", e)
                 })
                 break;
             }
@@ -77,6 +92,45 @@ const AddTask = () => {
                 setCoverImage(null)
             }
         }
+    }
+
+    const handleCoverImage = async (res: any) => {
+        // console.log("inside----")
+        // const filename = `coverImageListo/${Date.now()}_coverImage.jpg`;
+        // const reference = getStorage().ref(filename);
+        // await reference.putFile(res.path);
+        // const downloadURL = await reference.getDownloadURL();
+        // console.log("donwloadUrl---", downloadURL)
+        // setCoverImage((prev: any) => ({ ...prev, "url": downloadURL }))
+        const storage = getStorage();
+        const filename = `coverImageListo/${Date.now()}_coverImage.jpg`;
+        const storageRef = ref(storage, filename);
+
+        console.log("storageRef", storageRef)
+
+        putFile(storageRef, res?.path).then(res => {
+            console.log("purfile res---", res)
+        }).catch(e => console.log("error in put file", e))
+
+        // // 2️⃣ Convert base64 to Uint8Array
+        // const base64Data = res.data; // or res.base64 depending on your picker
+        // const fileBuffer = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+        // console.log("filebuffer----", fileBuffer)
+
+        // // 3️⃣ Upload the file
+        // uploadBytes(storageRef, fileBuffer, { contentType: 'image/jpeg' }).then(res => {
+        //     console.log("upload res---", res)
+        // }).catch(e => console.log("upload error ", e.message))
+
+        // 4️⃣ Get the download URL
+        // getDownloadURL(storageRef).then((res) => {
+        //     console.log("downloadurlres---", res)
+        // }).catch(e => console.log("error in download", e))
+        // console.log('downloadUrl---', downloadURL);
+
+        // 5️⃣ Update state
+        // setCoverImage((prev: any) => ({ ...prev, url: downloadURL }));
     }
 
     const handleEmoji = (text: string) => {
@@ -109,7 +163,7 @@ const AddTask = () => {
                 <ScrollView contentContainerStyle={{ flexGrow: 1, backgroundColor: appColors?.light }}>
                     {coverImage ?
                         <Image
-                            source={{ uri: coverImage }}
+                            source={{ uri: coverImage?.uri }}
                             style={{ height: 180, width: "100%" }}
                         />
                         : null}

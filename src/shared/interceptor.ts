@@ -3,7 +3,7 @@ import { baseUrl, encryptedStorage } from "./config";
 
 const ListoAPI = axios.create({
     baseURL: baseUrl, // IMPORTANT: Replace with your actual backend API URL
-    timeout: 10000, // Request timeout in milliseconds (e.g., 10 seconds)
+    timeout: 70000, // Request timeout in milliseconds (e.g., 10 seconds)
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json', // Often useful for APIs
@@ -15,7 +15,7 @@ ListoAPI?.interceptors?.request?.use((config) => {
     // For example, if you have a token stored in MMKV:
     const token = encryptedStorage.getString('authToken');
     if (token) {
-        config.headers['Authorization'] = `Bearer ${token}`;
+        config.headers['Authorization'] = token;
     }
     return config;
 }, (error) => {
